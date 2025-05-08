@@ -4,10 +4,10 @@ Update: 2024-07-22
 Version: 3.9.11.17.4
 """
 
-from . import uiautomation as uia
-from .languages import *
-from .utils import *
-from .elements import *
+from wxauto.automation import uiautomation as uia
+from wxauto.localization.languages import *
+from wxauto.utils.utils import *
+from wxauto.automation.elements import *
 from .errors import *
 from .color import *
 import time
@@ -25,8 +25,8 @@ class WeChat(WeChatBase):
     SessionItemList: list = []
 
     def __init__(
-            self, 
-            language: Literal['cn', 'cn_t', 'en'] = 'cn', 
+            self,
+            language: Literal['cn', 'cn_t', 'en'] = 'cn',
             debug: bool = False
         ) -> None:
         """微信UI自动化实例
@@ -50,7 +50,7 @@ class WeChat(WeChatBase):
         # |=|———|       |
         # ———————————————
         self.NavigationBox, self.SessionBox, self.ChatBox  = MainControl2.GetChildren()
-        
+
         # 初始化导航栏，以A开头 | self.NavigationBox  -->  A_xxx
         self.A_MyIcon = self.NavigationBox.ButtonControl()
         self.A_ChatIcon = self.NavigationBox.ButtonControl(Name=self._lang('聊天'))
@@ -61,18 +61,18 @@ class WeChat(WeChatBase):
         self.A_MiniProgram = self.NavigationBox.ButtonControl(Name=self._lang('小程序面板'))
         self.A_Phone = self.NavigationBox.ButtonControl(Name=self._lang('手机'))
         self.A_Settings = self.NavigationBox.ButtonControl(Name=self._lang('设置及其他'))
-        
+
         # 初始化聊天列表，以B开头
         self.B_Search = self.SessionBox.EditControl(Name=self._lang('搜索'))
-        
+
         # 初始化聊天栏，以C开头
         self.C_MsgList = self.ChatBox.ListControl(Name=self._lang('消息'))
-        
+
         self.nickname = self.A_MyIcon.Name
         msgs_ = self.GetAllMessage()
         self.usedmsgid = [i[-1] for i in msgs_]
         print(f'初始化成功，获取到已登录窗口：{self.nickname}')
-    
+
     def _checkversion(self):
         self.HWND = FindWindow(classname='WeChatMainWndForPC')
         wxpath = GetPathByHwnd(self.HWND)
@@ -80,8 +80,8 @@ class WeChat(WeChatBase):
         if wxversion != self.VERSION:
             Warnings.lightred(self._lang('版本不一致', 'WARNING').format(wxversion, self.VERSION), stacklevel=2)
             return False
-    
-    
+
+
     def _show(self):
         self.HWND = FindWindow(classname='WeChatMainWndForPC')
         win32gui.ShowWindow(self.HWND, 1)
@@ -108,7 +108,7 @@ class WeChat(WeChatBase):
             info['昵称'] = controls[0].Name
         wxlog.debug(f'获取到好友详情：{info}')
         return info
-    
+
     def _goto_first_friend(self):
         def find_letter_tag(self):
             items = self.SessionBox.ListControl().GetChildren()
@@ -127,14 +127,14 @@ class WeChat(WeChatBase):
 
     def GetFriendDetails(self, n=None, timeout=0xFFFFF):
         """获取所有好友详情信息
-        
+
         Args:
             n (int, optional): 获取前n个好友详情信息, 默认为None，获取所有好友详情信息
             timeout (int, optional): 获取超时时间（秒），超过该时间则直接返回结果
 
         Returns:
             list: 所有好友详情信息
-            
+
         注：1. 该方法运行时间较长，约0.5~1秒一个好友的速度，好友多的话可将n设置为一个较小的值，先测试一下
             2. 如果遇到企业微信的好友且为已离职状态，可能导致微信卡死，需重启（此为微信客户端BUG）
             3. 该方法未经过大量测试，可能存在未知问题，如有问题请微信群内反馈
@@ -155,13 +155,13 @@ class WeChat(WeChatBase):
             if n and len(details) >= n:
                 return details
 
-            
+
     def GetSessionAmont(self, SessionItem):
         """获取聊天对象名和新消息条数
-        
+
         Args:
             SessionItem (uiautomation.ListItemControl): 聊天对象控件
-            
+
         Returns:
             sessionname (str): 聊天对象名
             amount (int): 新消息条数
@@ -175,12 +175,12 @@ class WeChat(WeChatBase):
                 pass
         sessionname = SessionItem.Name if SessionItem.ButtonControl().Name == 'SessionListItem' else SessionItem.ButtonControl().Name
         return sessionname, amount
-    
+
     def CheckNewMessage(self):
         """是否有新消息"""
         self._show()
         return IsRedPixel(self.A_ChatIcon)
-    
+
     def GetNextNewMessage(self, savepic=False, savefile=False, savevoice=False, timeout=10):
         """获取下一个新消息"""
         msgs_ = self.GetAllMessage()
@@ -188,7 +188,7 @@ class WeChat(WeChatBase):
 
         if not self.usedmsgid:
             self.usedmsgid = msgids
-        
+
         newmsgids = [i for i in msgids if i not in self.usedmsgid]
         oldmsgids = [i for i in self.usedmsgid if i in msgids]
         if newmsgids and oldmsgids:
@@ -200,7 +200,7 @@ class WeChat(WeChatBase):
                     new = msgids[i+1:]
                     break
             NewMsgItems = [
-                i for i in MsgItems 
+                i for i in MsgItems
                 if ''.join([str(i) for i in i.GetRuntimeId()]) in new
                 and i.ControlTypeName == 'ListItemControl'
             ]
@@ -231,10 +231,10 @@ class WeChat(WeChatBase):
         else:
             wxlog.debug('没有新消息')
             return {}
-    
+
     def GetAllNewMessage(self, max_round=10):
         """获取所有新消息
-        
+
         Args:
             max_round (int): 最大获取次数  * 这里是为了避免某几个窗口一直有新消息，导致无法停止
         """
@@ -249,14 +249,14 @@ class WeChat(WeChatBase):
             else:
                 break
         return newmessages
-    
+
     def GetSessionList(self, reset=False, newmessage=False):
         """获取当前聊天列表中的所有聊天对象
-        
+
         Args:
             reset (bool): 是否重置SessionItemList
             newmessage (bool): 是否只获取有新消息的聊天对象
-            
+
         Returns:
             SessionList (dict): 聊天对象列表，键为聊天对象名，值为新消息条数
         """
@@ -277,11 +277,11 @@ class WeChat(WeChatBase):
             self.SessionItem = self.SessionItem.GetNextSiblingControl()
             if not self.SessionItem:
                 break
-            
+
         if newmessage:
             return {i:SessionList[i] for i in SessionList if SessionList[i] > 0}
         return SessionList
-    
+
     def GetSession(self):
         """获取当前聊天列表中的所有聊天对象
 
@@ -299,14 +299,14 @@ class WeChat(WeChatBase):
         """
         sessions = self.SessionBox.ListControl()
         return [SessionElement(i) for i in sessions.GetChildren()]
-    
+
     def ChatWith(self, who, timeout=2):
         '''打开某个聊天框
-        
+
         Args:
             who ( str ): 要打开的聊天框好友名;  * 最好完整匹配，不完全匹配只会选取搜索框第一个
             timeout ( num, optional ): 超时时间，默认2秒
-            
+
         Returns:
             chatname ( str ): 匹配值第一个的完整名字
         '''
@@ -334,10 +334,10 @@ class WeChat(WeChatBase):
                 chatname = target_control.Name
                 target_control.Click(simulateMove=False)
                 return chatname
-    
+
     def AtAll(self, msg=None, who=None):
         """@所有人
-        
+
         Args:
             who (str, optional): 要发送给谁，如果为None，则发送到当前聊天页面。  *最好完整匹配，优先使用备注
             msg (str, optional): 要发送的文本消息
@@ -346,7 +346,7 @@ class WeChat(WeChatBase):
             chat = ChatWnd(who, self.language)
             chat.AtAll(msg)
             return None
-        
+
         self._show()
         if who:
             try:
@@ -405,7 +405,7 @@ class WeChat(WeChatBase):
         self._show()
         if not editbox.HasKeyboardFocus:
             editbox.Click(simulateMove=False)
-        
+
         if at:
             if isinstance(at, str):
                 at = [at]
@@ -427,14 +427,14 @@ class WeChat(WeChatBase):
                 if editbox.GetValuePattern().Value:
                     break
         editbox.SendKeys('{Enter}')
-        
+
     def SendFiles(self, filepath, who=None):
         """向当前聊天窗口发送文件
-        
+
         Args:
-            filepath (str|list): 要复制文件的绝对路径  
+            filepath (str|list): 要复制文件的绝对路径
             who (str): 要发送给谁，如果为None，则发送到当前聊天页面。  *最好完整匹配，优先使用备注
-            
+
         Returns:
             bool: 是否成功发送文件
         """
@@ -458,7 +458,7 @@ class WeChat(WeChatBase):
         else:
             Warnings.lightred(f'filepath参数格式错误：{type(filepath)}，应为str、list、tuple、set格式', stacklevel=2)
             return False
-        
+
         if filelist:
             self._show()
             if who:
@@ -487,13 +487,13 @@ class WeChat(WeChatBase):
         else:
             Warnings.lightred('所有文件都无法成功发送', stacklevel=2)
             return False
-            
+
     def GetAllMessage(self, savepic=False, savefile=False, savevoice=False):
         '''获取当前窗口中加载的所有聊天记录
-        
+
         Args:
             savepic (bool): 是否自动保存聊天图片
-            
+
         Returns:
             list: 聊天记录信息
         '''
@@ -502,10 +502,10 @@ class WeChat(WeChatBase):
         MsgItems = self.C_MsgList.GetChildren()
         msgs = self._getmsgs(MsgItems, savepic, savefile=savefile, savevoice=savevoice)
         return msgs
-    
+
     def LoadMoreMessage(self):
         """加载当前聊天页面更多聊天信息
-        
+
         Returns:
             bool: 是否成功加载更多聊天信息
         """
@@ -525,7 +525,7 @@ class WeChat(WeChatBase):
                     loadmore_top = loadmore.BoundingRectangle.top
         self.C_MsgList.WheelUp(wheelTimes=1, waitTime=0.1)
         return isload
-    
+
     def CurrentChat(self):
         '''获取当前聊天对象名'''
         uia.SetGlobalSearchTimeout(1)
@@ -539,7 +539,7 @@ class WeChat(WeChatBase):
 
     def GetNewFriends(self):
         """获取新的好友申请列表
-        
+
         Returns:
             list: 新的好友申请列表，元素为NewFriendsElement对象，可直接调用Accept方法
 
@@ -558,10 +558,10 @@ class WeChat(WeChatBase):
         AcceptableNewFriendsList = [i for i in NewFriendsList if i.acceptable]
         wxlog.debug(f'获取到 {len(AcceptableNewFriendsList)} 条新的好友申请')
         return AcceptableNewFriendsList
-    
+
     def AddListenChat(self, who, savepic=False, savefile=False, savevoice=False):
         """添加监听对象
-        
+
         Args:
             who (str): 要监听的聊天对象名
             savepic (bool, optional): 是否自动保存聊天图片，只针对该聊天对象有效
@@ -579,7 +579,7 @@ class WeChat(WeChatBase):
 
     def GetListenMessage(self, who=None):
         """获取监听对象的新消息
-        
+
         Args:
             who (str, optional): 要获取消息的聊天对象名，如果为None，则获取所有监听对象的消息
 
@@ -610,7 +610,7 @@ class WeChat(WeChatBase):
 
     # def DownloadFiles(self, who, amount=1):
     #     """切换到聊天文件页面
-        
+
     #     Args:
     #         who (str): 要下载文件的聊天对象名
     #         amount (int): 要下载的文件数量
@@ -634,7 +634,7 @@ class WeChat(WeChatBase):
             rect = ele.BoundingRectangle
             Click(rect)
         except:
-            return 
+            return
         finally:
             uia.SetGlobalSearchTimeout(10)
         roominfoWnd = self.UiaAPI.Control(ClassName='SessionChatRoomDetailWnd', searchDepth=1)
@@ -658,10 +658,10 @@ class WeChat(WeChatBase):
         注：
             1. 该方法运行时间取决于好友数量，约每秒6~8个好友的速度
             2. 该方法未经过大量测试，可能存在未知问题，如有问题请微信群内反馈
-        
+
         Args:
             keywords (str, optional): 搜索关键词，只返回包含关键词的好友列表
-            
+
         Returns:
             list: 所有好友列表
         """
@@ -675,11 +675,11 @@ class WeChat(WeChatBase):
         contactwnd.Close()
         self.SwitchToChat()
         return friends
-    
+
     def GetAllListenChat(self):
         """获取所有监听对象"""
         return self.listen
-    
+
     def RemoveListenChat(self, who):
         """移除监听对象"""
         if who in self.listen:
@@ -743,7 +743,7 @@ class WeChat(WeChatBase):
 
             NewFriendsWnd.ButtonControl(Name='确定').Click(simulateMove=False)
         return True
-    
+
 class WeChatFiles:
     def __init__(self, language='cn') -> None:
         self.language = language

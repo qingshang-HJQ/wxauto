@@ -7,7 +7,7 @@ from wxauto import WeChat
 wx = WeChat()
 # 输出 > 初始化成功，获取到已登录窗口：xxxx
 
-listen_list = ["二对一精准扶贫🌙"]
+listen_list = ["test"]
 for i in listen_list:
     wx.AddListenChat(who=i, savepic=True)
 
