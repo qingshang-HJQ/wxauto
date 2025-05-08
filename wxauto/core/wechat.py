@@ -6,10 +6,10 @@ Version: 3.9.11.17.4
 
 from wxauto.automation import uiautomation as uia
 from wxauto.localization.languages import *
+from wxauto.utils.color import Warnings
 from wxauto.utils.utils import *
 from wxauto.automation.elements import *
-from .errors import *
-from .color import *
+from wxauto.exceptions.errors import *
 import time
 import os
 import re

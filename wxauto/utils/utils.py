@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from . import uiautomation as uia
+from wxauto.automation import uiautomation as uia
 from PIL import ImageGrab
 import win32clipboard
 import win32process
