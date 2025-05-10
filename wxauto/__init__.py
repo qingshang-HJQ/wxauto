@@ -1,5 +1,5 @@
-from .wxauto import WeChat
-from .utils import *
+from wxauto.core.wechat import WeChat
+from wxauto.utils.utils import *
 
 __version__ = VERSION
 

@@ -1,0 +1,19 @@
+{
+    "global_rules": [
+        {
+            "keywords": ["紧急", "urgent"],
+            "reply": "请拨打紧急电话：120",
+            "groups": ["ALL"],
+            "friends": ["ALL"]
+        }
+    ],
+    "group_rules": {
+        "测试群": [
+            {
+                "keywords": ["报价"],
+                "reply": "最新报价单：https://xxx.com/price.pdf",
+                "at_sender": true
+            }
+        ]
+    }
+}

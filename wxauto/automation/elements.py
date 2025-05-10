@@ -1,8 +1,8 @@
-from . import uiautomation as uia
-from .languages import *
-from .utils import *
-from .color import *
-from .errors import *
+from wxauto.automation import uiautomation as uia
+from wxauto.localization.languages import *
+from wxauto.utils.utils import *
+from wxauto.utils.color import *
+from wxauto.exceptions.errors import *
 import datetime
 import time
 import os
